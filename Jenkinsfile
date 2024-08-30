@@ -1,49 +1,28 @@
 pipeline {
   agent any
+  
+  tools {
+      nodejs 'node-11.0.0'
+  }
 
   options {
     timeout(time: 2, unit: 'MINUTES')
   }
 
-  environment {
-    ARTIFACT_ID = "sac/webapp:${env.BUILD_NUMBER}"
-  }
-
   stages {
-    stage('Build') {
+    stage('install dependencies') {
       steps {
         script {
-          dir("webapp") {
-            dockerImage = docker.build "${env.ARTIFACT_ID}"
-          }
+            sh 'npm i'
         }
       }
     }
-    stage('Run tests') {
-      steps {
-        sh "docker run ${dockerImage.id} npm test"
-      }
-    }
-    stage('Publish') {
-      when {
-        branch 'master'
-      }
+    stage('run test') {
       steps {
         script {
-          docker.withRegistry("", "DockerHubCredentials") {
-            dockerImage.push()
-          }
+            sh 'npm t'
         }
-      }
-    }
-    stage('Schedule Staging Deployment') {
-      when {
-        branch 'master'
-      }
-      steps {
-        build job: 'deploy-webapp-staging', parameters: [string(name: 'ARTIFACT_ID', value: "${env.ARTIFACT_ID}")], wait: false
       }
     }
   }
 }
-
