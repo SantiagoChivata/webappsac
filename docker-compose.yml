@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins_new
+    ports:
+      - "8081:8080"  # Cambia el puerto 8080 a 8081
+      - "50001:50000"  # Cambia el puerto 50000 a 50001
+    volumes:
+      - jenkins_home:/var/jenkins_home
+
+volumes:
+  jenkins_home:
